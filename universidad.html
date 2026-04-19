@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<!--<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -317,6 +317,184 @@
             loadingArea.style.display = "none";
             btn.disabled = false;
         }
+    };
+</script>
+</body>
+</html>
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Encuesta | Cinépolis Univeersidad Harvest Rush</title>
+    <style>
+        :root { --primary: #0b2343; --bg: #f4f7f9; --text: #333; --disabled: #cccccc; }
+        body { font-family: -apple-system, system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 15px; -webkit-tap-highlight-color: transparent; }
+        .container { width: 100%; max-width: 500px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); box-sizing: border-box; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .logo { max-width: 150px; height: auto; margin-bottom: 15px; }
+        h1 { font-size: 1.3rem; color: var(--primary); margin: 0; }
+        .question-block { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+        .question-text { font-weight: 700; margin-bottom: 15px; display: block; font-size: 1rem; }
+        .options-group { display: flex; flex-direction: column; gap: 10px; }
+        .option-label { display: block; position: relative; padding: 14px 15px 14px 50px; background: #fff; border: 2px solid #edf2f7; border-radius: 10px; cursor: pointer; font-size: 0.95rem; }
+        .option-label input { position: absolute; opacity: 0; }
+        .checkmark { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); height: 22px; width: 22px; background-color: #fff; border-radius: 50%; border: 2px solid #cbd5e0; }
+        .option-label input:checked ~ .checkmark { background-color: var(--primary); border-color: var(--primary); }
+        .option-label.selected { border-color: var(--primary); background-color: #f0f7ff; }
+        .btn-submit { background-color: var(--disabled); color: white; border: none; padding: 16px; border-radius: 10px; font-size: 1.1rem; font-weight: 700; width: 100%; cursor: not-allowed; -webkit-appearance: none; }
+        .btn-submit.active { background-color: var(--primary); cursor: pointer; }
+        #loading, #success-msg { text-align: center; padding: 40px 0; display: none; }
+        /* Cuadro de error oculto por defecto */
+        #debug-log { display: none; margin-top: 20px; font-size: 10px; color: red; background: #ffeeee; padding: 10px; border-radius: 5px; border: 1px solid red; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-app">
+    <div id="survey-content">
+        <div class="header">
+            <img id="client-logo" src="" alt="Logo" class="logo" style="display:none;">
+            <h1 id="survey-title">Iniciando sistema...</h1>
+        </div>
+        <form id="qa-form">
+            <div id="questions-container"></div>
+            <button type="submit" class="btn-submit" id="btn-envio" disabled>Enviar Respuestas</button>
+        </form>
+    </div>
+    <div id="loading"><h3>🚀 Enviando...</h3></div>
+    <div id="success-msg"><h2>¡Gracias!</h2><p>Registro exitoso.</p><button class="btn-submit active" onclick="location.reload()">Nueva Encuesta</button></div>
+    <div id="debug-log"></div>
+</div>
+
+<script>
+    // --- CONFIGURACIÓN ---
+    const URL_WEBSERVICE = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
+    const URL_POST = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
+    const NOMBRE_ENCUESTA_OBJETIVO = "Cinepolis Universidad Harvest Rush 2026";
+    var currentData = null;
+
+    function logError(msg) {
+        var logDiv = document.getElementById('debug-log');
+        logDiv.style.display = "block";
+        logDiv.innerText += msg + "\n";
+    }
+
+    // Usamos DOMContentLoaded en lugar de onload para mayor rapidez en Chrome
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('survey-title').innerText = "Cargando encuesta...";
+        
+        fetch(URL_WEBSERVICE, { cache: "no-store" }) // Forzamos a no usar cache
+            .then(function(response) {
+                if (!response.ok) throw new Error("Status: " + response.status);
+                return response.json();
+            })
+            .then(function(json) {
+                if (!json.Encuesta) throw new Error("JSON inválido");
+                
+                var encuestas = json.Encuesta;
+                for (var i = 0; i < encuestas.length; i++) {
+                    if (encuestas[i].NombreEncuesta === NOMBRE_OBJETIVO) {
+                        currentData = encuestas[i];
+                        break;
+                    }
+                }
+                if (currentData) { 
+                    renderSurvey(currentData); 
+                } else { 
+                    document.getElementById('survey-title').innerText = "Encuesta no disponible"; 
+                }
+            })
+            .catch(function(err) {
+                logError("Error de Red/Carga: " + err.message);
+                document.getElementById('survey-title').innerText = "Error al conectar";
+            });
+    });
+
+    function renderSurvey(data) {
+        try {
+            document.getElementById('survey-title').innerText = data.NombreEncuesta;
+            if (data.LinkLogoCliente) {
+                var logo = document.getElementById('client-logo');
+                logo.src = data.LinkLogoCliente;
+                logo.style.display = "inline-block";
+            }
+
+            var container = document.getElementById('questions-container');
+            var html = "";
+            for (var q = 0; q < data.Data.length; q++) {
+                var item = data.Data[q];
+                html += '<div class="question-block"><span class="question-text">' + (q + 1) + '. ' + item.Question + '</span><div class="options-group">';
+                for (var a = 0; a < item.Answers.length; a++) {
+                    var ans = item.Answers[a];
+                    html += '<label class="option-label" id="label-q' + q + '-a' + a + '">' +
+                            '<input type="radio" name="q' + q + '" value="' + ans + '" onchange="handleSelection(' + q + ',' + a + ')">' +
+                            '<span class="checkmark"></span>' + ans + '</label>';
+                }
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        } catch (e) {
+            logError("Error en Render: " + e.message);
+        }
+    }
+
+    function handleSelection(qIdx, aIdx) {
+        var labels = document.querySelectorAll('[id^="label-q' + qIdx + '-"]');
+        for (var i = 0; i < labels.length; i++) { labels[i].classList.remove('selected'); }
+        document.getElementById('label-q' + qIdx + '-a' + aIdx).classList.add('selected');
+        checkValidity();
+    }
+
+    function checkValidity() {
+        var btn = document.getElementById('btn-envio');
+        var answered = 0;
+        for (var i = 0; i < currentData.Data.length; i++) {
+            if (document.querySelector('input[name="q' + i + '"]:checked')) { answered++; }
+        }
+        if (answered === currentData.Data.length) {
+            btn.disabled = false;
+            btn.classList.add('active');
+        }
+    }
+
+    document.getElementById('qa-form').onsubmit = function(e) {
+        e.preventDefault();
+        var formArea = document.getElementById('survey-content');
+        var loadingArea = document.getElementById('loading');
+        var successArea = document.getElementById('success-msg');
+        
+        var qaString = "";
+        for (var i = 0; i < currentData.Data.length; i++) {
+            var val = document.querySelector('input[name="q' + i + '"]:checked').value;
+            qaString += currentData.Data[i].Question + "#" + val + "¦";
+        }
+
+        var payload = {
+            timeStamp: new Date().toLocaleString('es-MX'),
+            device: "iPhone 16 / Chrome Client",
+            encuesta: currentData.NombreEncuesta,
+            cantidadPreguntas: currentData.Data.length,
+            preguntasRespuestas: qaString
+        };
+
+        formArea.style.display = "none";
+        loadingArea.style.display = "block";
+
+        fetch(URL_POST, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(payload)
+        }).then(function() {
+            loadingArea.style.display = "none";
+            successArea.style.display = "block";
+        }).catch(function(err) {
+            logError("Error al enviar: " + err.message);
+            formArea.style.display = "block";
+            loadingArea.style.display = "none";
+        });
     };
 </script>
 </body>
