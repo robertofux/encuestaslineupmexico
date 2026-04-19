@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta | Cinépolis Universidad Harvest Rush 2026</title>
+    <style>
+        :root {
+            --primary: #0b2343; /* Azul Cinépolis */
+            --accent: #ffcc00;  /* Amarillo acento */
+            --bg: #f4f7f9;
+            --text: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 180px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Estilo moderno para los Radio Buttons */
+        .option-label {
+            display: block;
+            position: relative;
+            padding: 12px 15px 12px 45px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            background: #f0f4f8;
+        }
+
+        .option-label input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 12px;
+            left: 15px;
+            height: 20px;
+            width: 20px;
+            background-color: #eee;
+            border-radius: 50%;
+            border: 1px solid #ccc;
+        }
+
+        .option-label input:checked ~ .checkmark {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .option-label input:checked ~ .checkmark:after {
+            display: block;
+        }
+
+        .option-label .checkmark:after {
+            top: 6px;
+            left: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            background-color: #163a6d;
+        }
+
+        .btn-submit:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #loading, #success-msg {
+            text-align: center;
+            padding: 40px 0;
+            display: none;
+        }
+
+        #success-msg h2 { color: #28a745; }
+
+        /* Responsividad */
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 20px; }
+            h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="survey-content">
+        <div class="header">
+            <img id="client-logo" src="" alt="Logo" class="logo" style="display:none;">
+            <h1 id="survey-title">Cargando encuesta...</h1>
+        </div>
+
+        <form id="qa-form">
+            <div id="questions-container"></div>
+            <button type="submit" class="btn-submit" id="btn-envio">Enviar Respuestas</button>
+        </form>
+    </div>
+
+    <div id="loading">
+        <h3>Enviando respuestas...</h3>
+        <p>Por favor espera un momento.</p>
+    </div>
+
+    <div id="success-msg">
+        <h2>¡Gracias por participar!</h2>
+        <p>Tus respuestas han sido registradas correctamente.</p>
+        <button class="btn-submit" onclick="location.reload()">Nueva respuesta</button>
+    </div>
+</div>
+
+<script>
+    // --- CONFIGURACIÓN ---
+    const URL_WEBSERVICE = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
+    const URL_POST = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
+    const NOMBRE_ENCUESTA_OBJETIVO = "Cinepolis Universidad Harvest Rush 2026";
+
+    let currentSurveyData = null;
+
+    // 1. Cargar datos de la encuesta al iniciar
+    window.onload = async () => {
+        try {
+            const response = await fetch(URL_WEBSERVICE);
+            const json = await response.json();
+            
+            // Filtrar por el nombre específico
+            currentSurveyData = json.Encuesta.find(e => e.NombreEncuesta === NOMBRE_ENCUESTA_OBJETIVO);
+
+            if (!currentSurveyData) {
+                document.getElementById('survey-title').innerText = "Encuesta no encontrada.";
+                return;
+            }
+
+            renderSurvey(currentSurveyData);
+        } catch (error) {
+            console.error("Error cargando encuesta:", error);
+            document.getElementById('survey-title').innerText = "Error al conectar con el servidor.";
+        }
+    };
+
+    // 2. Pintar la encuesta en el HTML
+    function renderSurvey(data) {
+        document.getElementById('survey-title').innerText = data.NombreEncuesta;
+        
+        if (data.LinkLogoCliente) {
+            const logo = document.getElementById('client-logo');
+            logo.src = data.LinkLogoCliente;
+            logo.style.display = "inline-block";
+        }
+
+        const container = document.getElementById('questions-container');
+        
+        data.Data.forEach((q, qIndex) => {
+            const block = document.createElement('div');
+            block.className = 'question-block';
+            
+            block.innerHTML = `
+                <span class="question-text">${qIndex + 1}. ${q.Question}</span>
+                <div class="options-group">
+                    ${q.Answers.map((ans, aIndex) => `
+                        <label class="option-label">
+                            <input type="radio" name="q${qIndex}" value="${ans}" required>
+                            <span class="checkmark"></span>
+                            ${ans}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+            container.appendChild(block);
+        });
+    }
+
+    // 3. Manejar el envío de respuestas
+    document.getElementById('qa-form').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btn-envio');
+        const formArea = document.getElementById('survey-content');
+        const loadingArea = document.getElementById('loading');
+        const successArea = document.getElementById('success-msg');
+
+        btn.disabled = true;
+        
+        // Preparar Preguntas y Respuestas en formato: Pregunta#Respuesta¦
+        let qaString = "";
+        currentSurveyData.Data.forEach((q, index) => {
+            const selected = document.querySelector(`input[name="q${index}"]:checked`).value;
+            qaString += `${q.Question}#${selected}¦`;
+        });
+
+        // Obtener ID del dispositivo (Navegador + OS)
+        const deviceID = `${navigator.vendor} - ${navigator.platform}`;
+
+        const payload = {
+            timeStamp: new Date().toLocaleString(),
+            device: deviceID,
+            encuesta: currentSurveyData.NombreEncuesta,
+            cantidadPreguntas: currentSurveyData.Data.length,
+            preguntasRespuestas: qaString
+        };
+
+        formArea.style.display = "none";
+        loadingArea.style.display = "block";
+
+        try {
+            await fetch(URL_POST, {
+                method: "POST",
+                mode: "no-cors", // Para evitar problemas de CORS con Apps Script
+                body: JSON.stringify(payload)
+            });
+
+            // Con no-cors no podemos leer la respuesta, pero si llega aquí es que se envió
+            loadingArea.style.display = "none";
+            successArea.style.display = "block";
+        } catch (error) {
+            alert("Error al enviar: " + error.message);
+            formArea.style.display = "block";
+            loadingArea.style.display = "none";
+            btn.disabled = false;
+        }
+    };
+</script>
+
+</body>
+</html>
