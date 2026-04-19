@@ -2,100 +2,111 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Encuesta | Cinépolis Universidad Harvest Rush 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Encuesta | Cinépolis Universidad Harvest Rush;</title>
     <style>
         :root {
-            --primary: #0b2343; /* Azul Cinépolis */
-            --accent: #ffcc00;  /* Amarillo acento */
+            --primary: #0b2343; 
+            --accent: #ffcc00;  
             --bg: #f4f7f9;
             --text: #333;
+            --disabled: #cccccc;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             justify-content: center;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 500px;
             background: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-sizing: border-box;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .logo {
-            max-width: 180px;
+            max-width: 150px;
+            height: auto;
             margin-bottom: 15px;
         }
 
         h1 {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: var(--primary);
             margin: 0;
+            line-height: 1.2;
         }
 
         .question-block {
-            margin-bottom: 25px;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .question-text {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 15px;
             display: block;
+            font-size: 1rem;
+            line-height: 1.4;
         }
 
         .options-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Estilo moderno para los Radio Buttons */
+        /* Estilo optimizado para Touch en iPhone */
         .option-label {
             display: block;
             position: relative;
-            padding: 12px 15px 12px 45px;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px 15px 14px 50px;
+            background: #ffffff;
+            border: 2px solid #edf2f7;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .option-label:hover {
-            background: #f0f4f8;
+        .option-label:active {
+            background: #f7fafc;
+            transform: scale(0.98);
         }
 
         .option-label input {
             position: absolute;
             opacity: 0;
-            cursor: pointer;
         }
 
         .checkmark {
             position: absolute;
-            top: 12px;
+            top: 50%;
             left: 15px;
-            height: 20px;
-            width: 20px;
-            background-color: #eee;
+            transform: translateY(-50%);
+            height: 22px;
+            width: 22px;
+            background-color: #fff;
             border-radius: 50%;
-            border: 1px solid #ccc;
+            border: 2px solid #cbd5e0;
         }
 
         .option-label input:checked ~ .checkmark {
@@ -103,17 +114,9 @@
             border-color: var(--primary);
         }
 
-        .checkmark:after {
+        .option-label input:checked ~ .checkmark:after {
             content: "";
             position: absolute;
-            display: none;
-        }
-
-        .option-label input:checked ~ .checkmark:after {
-            display: block;
-        }
-
-        .option-label .checkmark:after {
             top: 6px;
             left: 6px;
             width: 8px;
@@ -122,27 +125,31 @@
             background: white;
         }
 
+        /* Estado seleccionado de la tarjeta */
+        .option-label.selected {
+            border-color: var(--primary);
+            background-color: #f0f7ff;
+        }
+
         .btn-submit {
-            background-color: var(--primary);
+            background-color: var(--disabled);
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 8px;
+            padding: 16px;
+            border-radius: 10px;
             font-size: 1.1rem;
-            font-weight: bold;
+            font-weight: 700;
             width: 100%;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-top: 20px;
-        }
-
-        .btn-submit:hover {
-            background-color: #163a6d;
-        }
-
-        .btn-submit:disabled {
-            background-color: #ccc;
             cursor: not-allowed;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            -webkit-appearance: none;
+        }
+
+        .btn-submit.active {
+            background-color: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(11, 35, 67, 0.2);
         }
 
         #loading, #success-msg {
@@ -151,14 +158,7 @@
             display: none;
         }
 
-        #success-msg h2 { color: #28a745; }
-
-        /* Responsividad */
-        @media (max-width: 480px) {
-            body { padding: 10px; }
-            .container { padding: 20px; }
-            h1 { font-size: 1.2rem; }
-        }
+        #success-msg h2 { color: #28a745; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -167,24 +167,24 @@
     <div id="survey-content">
         <div class="header">
             <img id="client-logo" src="" alt="Logo" class="logo" style="display:none;">
-            <h1 id="survey-title">Cargando encuesta...</h1>
+            <h1 id="survey-title">Cargando...</h1>
         </div>
 
         <form id="qa-form">
             <div id="questions-container"></div>
-            <button type="submit" class="btn-submit" id="btn-envio">Enviar Respuestas</button>
+            <button type="submit" class="btn-submit" id="btn-envio" disabled>Enviar Respuestas</button>
         </form>
     </div>
 
     <div id="loading">
-        <h3>Enviando respuestas...</h3>
-        <p>Por favor espera un momento.</p>
+        <h3>🚀 Enviando...</h3>
+        <p>Guardando tus respuestas en el sistema.</p>
     </div>
 
     <div id="success-msg">
-        <h2>¡Gracias por participar!</h2>
-        <p>Tus respuestas han sido registradas correctamente.</p>
-        <button class="btn-submit" onclick="location.reload()">Nueva respuesta</button>
+        <h2>¡Registro Exitoso!</h2>
+        <p>Gracias por tu participación.</p>
+        <button class="btn-submit active" onclick="location.reload()">Siguiente Encuesta</button>
     </div>
 </div>
 
@@ -193,34 +193,28 @@
     const URL_WEBSERVICE = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
     const URL_POST = "https://script.google.com/macros/s/AKfycbympyQiEy7SAi6aWxG0fgmHmNB8bGbsNLoFKywsT3N3wypbxhgQ0AOOpdlW77nDrpAfUw/exec";
     const NOMBRE_ENCUESTA_OBJETIVO = "Cinepolis Universidad Harvest Rush 2026";
+    
 
     let currentSurveyData = null;
 
-    // 1. Cargar datos de la encuesta al iniciar
     window.onload = async () => {
         try {
             const response = await fetch(URL_WEBSERVICE);
             const json = await response.json();
-            
-            // Filtrar por el nombre específico
             currentSurveyData = json.Encuesta.find(e => e.NombreEncuesta === NOMBRE_ENCUESTA_OBJETIVO);
 
             if (!currentSurveyData) {
-                document.getElementById('survey-title').innerText = "Encuesta no encontrada.";
+                document.getElementById('survey-title').innerText = "Encuesta no disponible";
                 return;
             }
-
             renderSurvey(currentSurveyData);
         } catch (error) {
-            console.error("Error cargando encuesta:", error);
-            document.getElementById('survey-title').innerText = "Error al conectar con el servidor.";
+            document.getElementById('survey-title').innerText = "Error de conexión";
         }
     };
 
-    // 2. Pintar la encuesta en el HTML
     function renderSurvey(data) {
         document.getElementById('survey-title').innerText = data.NombreEncuesta;
-        
         if (data.LinkLogoCliente) {
             const logo = document.getElementById('client-logo');
             logo.src = data.LinkLogoCliente;
@@ -228,17 +222,16 @@
         }
 
         const container = document.getElementById('questions-container');
-        
         data.Data.forEach((q, qIndex) => {
             const block = document.createElement('div');
             block.className = 'question-block';
-            
             block.innerHTML = `
                 <span class="question-text">${qIndex + 1}. ${q.Question}</span>
                 <div class="options-group">
                     ${q.Answers.map((ans, aIndex) => `
-                        <label class="option-label">
-                            <input type="radio" name="q${qIndex}" value="${ans}" required>
+                        <label class="option-label" id="label-q${qIndex}-a${aIndex}">
+                            <input type="radio" name="q${qIndex}" value="${ans}" 
+                                   onchange="handleSelection(${qIndex}, ${aIndex})">
                             <span class="checkmark"></span>
                             ${ans}
                         </label>
@@ -249,10 +242,40 @@
         });
     }
 
-    // 3. Manejar el envío de respuestas
+    // Maneja el cambio visual y activa la validación
+    function handleSelection(qIndex, aIndex) {
+        // Remover clase seleccionada de todos los labels de esta pregunta
+        const labels = document.querySelectorAll(`[id^="label-q${qIndex}-"]`);
+        labels.forEach(l => l.classList.remove('selected'));
+        
+        // Añadir al seleccionado
+        document.getElementById(`label-q${qIndex}-a${aIndex}`).classList.add('selected');
+        
+        checkFormValidity();
+    }
+
+    function checkFormValidity() {
+        const btn = document.getElementById('btn-envio');
+        const totalQuestions = currentSurveyData.Data.length;
+        let answered = 0;
+
+        for (let i = 0; i < totalQuestions; i++) {
+            if (document.querySelector(`input[name="q${i}"]:checked`)) {
+                answered++;
+            }
+        }
+
+        if (answered === totalQuestions) {
+            btn.disabled = false;
+            btn.classList.add('active');
+        } else {
+            btn.disabled = true;
+            btn.classList.remove('active');
+        }
+    }
+
     document.getElementById('qa-form').onsubmit = async (e) => {
         e.preventDefault();
-        
         const btn = document.getElementById('btn-envio');
         const formArea = document.getElementById('survey-content');
         const loadingArea = document.getElementById('loading');
@@ -260,18 +283,17 @@
 
         btn.disabled = true;
         
-        // Preparar Preguntas y Respuestas en formato: Pregunta#Respuesta¦
         let qaString = "";
         currentSurveyData.Data.forEach((q, index) => {
             const selected = document.querySelector(`input[name="q${index}"]:checked`).value;
             qaString += `${q.Question}#${selected}¦`;
         });
 
-        // Obtener ID del dispositivo (Navegador + OS)
-        const deviceID = `${navigator.vendor} - ${navigator.platform}`;
+        // Identificación del dispositivo para la columna "Device"
+        const deviceID = `${navigator.platform} (${/iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iOS' : 'Web'})`;
 
         const payload = {
-            timeStamp: new Date().toLocaleString(),
+            timeStamp: new Date().toLocaleString('es-MX'),
             device: deviceID,
             encuesta: currentSurveyData.NombreEncuesta,
             cantidadPreguntas: currentSurveyData.Data.length,
@@ -284,21 +306,18 @@
         try {
             await fetch(URL_POST, {
                 method: "POST",
-                mode: "no-cors", // Para evitar problemas de CORS con Apps Script
+                mode: "no-cors",
                 body: JSON.stringify(payload)
             });
-
-            // Con no-cors no podemos leer la respuesta, pero si llega aquí es que se envió
             loadingArea.style.display = "none";
             successArea.style.display = "block";
         } catch (error) {
-            alert("Error al enviar: " + error.message);
+            alert("Error al enviar. Intenta de nuevo.");
             formArea.style.display = "block";
             loadingArea.style.display = "none";
             btn.disabled = false;
         }
     };
 </script>
-
 </body>
 </html>
