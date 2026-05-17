@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cargando...</title>
+    <style>
+        /* Estilos minimalistas por si la redirección tarda una fracción de segundo */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffffff;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="spinner"></div>
+
+    <script>
+        // CONFIGURACIÓN: Reemplaza ESTA URL por tu enlace completo de Google Apps Script (el que termina en /exec)
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9SyYHJ3tuNDE5rA5R4lGGrFEMScoVluk6jBuW1i-GveWeHV14MsgAIyMXCY00_EBpuA/exec";
+
+        // 1. Definición de las URLs finales de destino de Instagram
+        const destinos = {
+            "UniLineUp": "https://www.instagram.com/lineup_mx/",
+            "UniUsaRice": "https://www.instagram.com/usaricemexico/",
+            "PeriLineUp": "https://www.instagram.com/lineup_mx/",
+            "PeriUsaRice": "https://www.instagram.com/usaricemexico/"
+        };
+
+        // 2. Obtener el parámetro 'param' que viene en la URL de este sitio web
+        const urlParams = new URLSearchParams(window.location.search);
+        const parametro = urlParams.get('param');
+
+        // URL por defecto en caso de que alguien entre sin parámetros o con uno inválido
+        let urlDestinoFinal = "https://www.instagram.com/"; 
+
+        if (parametro && destinos[parametro]) {
+            urlDestinoFinal = destinos[parametro];
+
+            // 3. Llamada en SEGUNDO PLANO al Apps Script para sumar +1 (no bloquea la navegación)
+            // Usamos 'mode: no-cors' porque Apps Script suele dar redirecciones que causan error de CORS en JS, 
+            // pero con 'no-cors' la petición se envía y procesa con éxito en la hoja de cálculo igualmente.
+            fetch(`${SCRIPT_URL}?param=${parametro}`, { method: 'GET', mode: 'no-cors' });
+        }
+
+        // 4. Redirección INSTANTÁNEA del navegador al destino final
+        window.location.replace(urlDestinoFinal);
+    </script>
+</body>
+</html>
